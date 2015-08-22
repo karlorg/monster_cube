@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -39,6 +40,8 @@ class PlayState extends FlxState
 
         player = new Player(16, 16, tilemap);
         add(player);
+
+        FlxG.camera.follow(player, FlxCamera.STYLE_LOCKON);
     }
 
     /**
