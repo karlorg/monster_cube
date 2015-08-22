@@ -61,6 +61,18 @@ class Adventurer extends FlxSprite {
                                        player.y + player.height / 2);
         var treasurePoint = FlxPoint.get(treasure.x + treasure.width / 2,
                                          treasure.y + treasure.height / 2);
+
+        function canSeePlayer() : Bool {
+            if (!player.hiding &&
+                tilemap.ray(startPoint, playerPoint)) {
+                var distance = startPoint.distanceTo(playerPoint);
+                if (distance / tileWidth < 5) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         switch (behavior) {
 
         case Idle:
@@ -72,14 +84,11 @@ class Adventurer extends FlxSprite {
                 }
             }
 
-            if (tilemap.ray(startPoint, playerPoint)) {
-                var distance = startPoint.distanceTo(playerPoint);
-                if (distance / tileWidth < 5) {
-                    this.behavior = Running;
-                    lastSawCube = ticks;
-                    lastPathed = -10000;  // force re-path
-                    makeGraphic(10, 10, FlxColor.RED);
-                }
+            if (canSeePlayer()) {
+                this.behavior = Running;
+                lastSawCube = ticks;
+                lastPathed = -10000;  // force re-path
+                makeGraphic(10, 10, FlxColor.RED);
             }
 
         case Running:
@@ -125,11 +134,8 @@ class Adventurer extends FlxSprite {
                 lastPathed = ticks;
 
                 // Check if we should stop running
-                if (tilemap.ray(startPoint, playerPoint)) {
-                    var distance = startPoint.distanceTo(playerPoint);
-                    if (distance / tileWidth < 5) {
-                        lastSawCube = ticks;
-                    }
+                if (canSeePlayer()) {
+                    lastSawCube = ticks;
                 }
                 if (ticks - lastSawCube > 8 * 60) {
                     behavior = Idle;

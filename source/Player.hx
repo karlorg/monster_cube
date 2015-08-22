@@ -4,25 +4,49 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.tile.FlxTilemap;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 
 class Player extends FlxSprite {
 
+    static inline var alphaHiding : Float = 0.03;
+    static inline var alphaMoving : Float = 0.3;
+    static inline var hideDelay : Float = 0.3;
     static inline var speed : Float = 1.3;
     static var tileWidth : Int = PlayState.tileWidth;
     static var tileHeight : Int = PlayState.tileHeight;
 
     public var tilemap : FlxTilemap;
+    public var hiding(get, null) : Bool;
+
+    private var lastMoved : Int;
+    private var ticks : Int;
+    private var wasMoving : Bool;
 
     public function new(X : Float = 0, Y : Float = 0, tilemap : FlxTilemap) {
         super(X, Y);
 
         this.tilemap = tilemap;
 
-        makeGraphic(32, 32, FlxColor.BLUE);
+        makeGraphic(32, 32, FlxColor.AQUAMARINE);
+        alpha = alphaHiding;
+
+        wasMoving = false;
+
+        ticks = 0;
+        lastMoved = -10000;
+    }
+
+    public function get_hiding() : Bool {
+        return (!wasMoving) && (ticks - lastMoved > hideDelay * 60 / 2);
     }
 
     override public function update() : Void {
+        super.update();
+
+        ticks += 1;
+
         var up  = FlxG.keys.anyPressed(["UP", "W"]);
         var down  = FlxG.keys.anyPressed(["DOWN", "R"]);
         var left  = FlxG.keys.anyPressed(["LEFT", "A"]);
@@ -306,6 +330,24 @@ class Player extends FlxSprite {
                                         Math.floor(y / tileHeight) + 1);
             if (isWall(tile0) || isWall(tile1)) {
                 x = Math.floor(x / tileWidth) * tileWidth;
+            }
+        }
+
+        if (up || down || left || right) {
+            lastMoved = ticks;
+        }
+
+        if (!wasMoving) {
+            if (up || down || left || right) {
+                wasMoving = true;
+                FlxTween.tween(this, {alpha: alphaMoving}, hideDelay,
+                               {ease: FlxEase.quadIn});
+            }
+        } else {
+            if (!(up || down || left || right)) {
+                wasMoving = false;
+                FlxTween.tween(this, {alpha: alphaHiding}, hideDelay,
+                               {ease: FlxEase.quadIn});
             }
         }
     }
