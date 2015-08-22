@@ -9,6 +9,7 @@ import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
 import flixel.ui.FlxButton;
 import flixel.util.FlxMath;
+import flixel.util.FlxRandom;
 import openfl.Assets;
 
 /**
@@ -20,6 +21,7 @@ class PlayState extends FlxState
     static inline public var tileWidth : Int = 16;
     static inline public var tileHeight : Int = 16;
 
+    private var adventurers : Array<Adventurer>;
     private var player : Player;
     private var tilemap : FlxTilemap;
 
@@ -42,6 +44,23 @@ class PlayState extends FlxState
         add(player);
 
         FlxG.camera.follow(player, FlxCamera.STYLE_LOCKON);
+
+        adventurers = new Array<Adventurer>();
+        for (i in 0...10) {
+            spawnAdventurer();
+        }
+    }
+
+    private function spawnAdventurer() : Void {
+        var x = -1;
+        var y = -1;
+        do {
+            x = FlxRandom.intRanged(0, 20);
+            y = FlxRandom.intRanged(0, 20);
+        } while (tilemap.getTile(x, y) != 1);
+        var adv = new Adventurer(x, y, tilemap);
+        adventurers.push(adv);
+        add(adv);
     }
 
     /**
@@ -58,5 +77,20 @@ class PlayState extends FlxState
      */
     override public function update():Void {
         super.update();
+
+        // Collisions
+        for (adv in adventurers) {
+            if (player.overlaps(adv)) {
+                onAdventurerCollision(player, adv);
+            }
+        }
     }
+
+    private function onAdventurerCollision(player : Player, adv : Adventurer)
+        : Void {
+        if (player.exists && adv.exists) {
+            adv.kill();
+        }
+    }
+
 }
