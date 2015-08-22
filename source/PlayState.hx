@@ -58,7 +58,7 @@ class PlayState extends FlxState
             x = FlxRandom.intRanged(0, 20);
             y = FlxRandom.intRanged(0, 20);
         } while (tilemap.getTile(x, y) != 1);
-        var adv = new Adventurer(x, y, tilemap);
+        var adv = new Adventurer(x, y, tilemap, player);
         adventurers.push(adv);
         add(adv);
     }
