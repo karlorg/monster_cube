@@ -8,6 +8,7 @@ import flixel.FlxState;
 import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
 import flixel.ui.FlxButton;
+import flixel.util.FlxColor;
 import flixel.util.FlxMath;
 import flixel.util.FlxRandom;
 import openfl.Assets;
@@ -24,6 +25,7 @@ class PlayState extends FlxState
     private var adventurers : Array<Adventurer>;
     private var player : Player;
     private var tilemap : FlxTilemap;
+    private var treasure : FlxSprite;
 
     /**
      * Function that is called up when to state is created to set
@@ -45,6 +47,10 @@ class PlayState extends FlxState
 
         FlxG.camera.follow(player, FlxCamera.STYLE_LOCKON);
 
+        treasure = new FlxSprite(14 * tileWidth, 18 * tileHeight);
+        treasure.makeGraphic(tileWidth, tileHeight, FlxColor.GOLDEN);
+        add(treasure);
+
         adventurers = new Array<Adventurer>();
         for (i in 0...10) {
             spawnAdventurer();
@@ -58,7 +64,7 @@ class PlayState extends FlxState
             x = FlxRandom.intRanged(0, 20);
             y = FlxRandom.intRanged(0, 20);
         } while (tilemap.getTile(x, y) != 1);
-        var adv = new Adventurer(x, y, tilemap, player);
+        var adv = new Adventurer(x, y, tilemap, player, treasure);
         adventurers.push(adv);
         add(adv);
     }
