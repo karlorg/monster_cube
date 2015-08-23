@@ -13,7 +13,10 @@ import flixel.util.FlxRandom;
 class Player extends FlxSpriteGroup {
 
     static inline var alphaHiding : Float = 0.03;
+    static inline var alphaHurt : Float = 0.7;
     static inline var alphaMoving : Float = 0.3;
+    static inline var colorHurt = FlxColor.RED;
+    static inline var colorNormal = FlxColor.AQUAMARINE;
     static inline var hideDelay : Float = 0.3;
     static inline var speed : Float = 1.3;
     static var tileWidth : Int = PlayState.tileWidth;
@@ -23,6 +26,7 @@ class Player extends FlxSpriteGroup {
     public var hiding(get, null) : Bool;
     public var tilemap : FlxTilemap;
 
+    private var alphaTween : Null<FlxTween>;
     private var digestees : Array<Digestee>;
     private var lastMoved : Int;
     private var ticks : Int;
@@ -35,7 +39,7 @@ class Player extends FlxSpriteGroup {
 
         cube = new FlxSprite(0, 0);
         add(cube);
-        cube.makeGraphic(32, 32, FlxColor.AQUAMARINE);
+        cube.makeGraphic(32, 32, colorNormal);
         cube.alpha = alphaHiding;
         digestees = new Array<Digestee>();
 
@@ -43,6 +47,7 @@ class Player extends FlxSpriteGroup {
 
         ticks = 0;
         lastMoved = -10000;
+        alphaTween = null;
     }
 
     public function get_hiding() : Bool {
@@ -62,6 +67,18 @@ class Player extends FlxSpriteGroup {
         digestees.push(digestee);
         add(digestee);
         adv.kill();
+    }
+
+    public function onShot() : Void {
+        var targetAlpha : Float = 0;
+        if (wasMoving) {
+            targetAlpha = alphaMoving;
+        } else {
+            targetAlpha = alphaHiding;
+        }
+        FlxTween.color(cube, 0.3,
+                       colorHurt, colorNormal,
+                       alphaHurt, targetAlpha);
     }
 
     override public function update() : Void {
@@ -374,14 +391,18 @@ class Player extends FlxSpriteGroup {
         if (!wasMoving) {
             if (up || down || left || right) {
                 wasMoving = true;
-                FlxTween.tween(cube, {alpha: alphaMoving}, hideDelay,
-                               {ease: FlxEase.quadIn});
+                if (alphaTween != null) { alphaTween.cancel(); }
+                alphaTween = FlxTween.tween(cube,
+                                            {alpha: alphaMoving}, hideDelay,
+                                            {ease: FlxEase.quadIn});
             }
         } else {
             if (!(up || down || left || right)) {
                 wasMoving = false;
-                FlxTween.tween(cube, {alpha: alphaHiding}, hideDelay,
-                               {ease: FlxEase.quadIn});
+                if (alphaTween != null) { alphaTween.cancel(); }
+                alphaTween = FlxTween.tween(cube,
+                                            {alpha: alphaHiding}, hideDelay,
+                                            {ease: FlxEase.quadIn});
             }
         }
     }

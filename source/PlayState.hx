@@ -109,6 +109,8 @@ class PlayState extends FlxState
         FlxG.collide(shots, tilemap);
 
         super.update();
+
+        FlxG.overlap(shots, player.cube, onPlayerShot);
     }
 
     private function onAdventurerCollision(player : Player, adv : Adventurer)
@@ -116,6 +118,11 @@ class PlayState extends FlxState
         if (player.exists && adv.exists) {
             player.eat(adv);
         }
+    }
+
+    private function onPlayerShot(shot: FlxObject, cube: FlxObject) {
+        shot.kill();
+        player.onShot();
     }
 
 }
