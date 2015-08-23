@@ -20,13 +20,19 @@ import openfl.Assets;
 class PlayState extends FlxState
 {
 
+    static inline var spawnDelay : Int = 5 * 60;
+    static private var spawnPoints : Array<Array<Int>> = [
+        [0, 1], [4, 0], [10, 0], [18, 0], [19, 5]
+        ];
     static inline public var tileWidth : Int = 16;
     static inline public var tileHeight : Int = 16;
 
     private var adventurers : Array<Adventurer>;
     private var hud : HUD;
+    private var lastAdvSpawn : Int;
     private var player : Player;
     private var shots : FlxGroup;
+    private var ticks : Int;
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
 
@@ -36,6 +42,9 @@ class PlayState extends FlxState
      */
     override public function create():Void {
         super.create();
+
+        ticks = 0;
+        lastAdvSpawn = -10000;
 
         tilemap = new FlxTilemap();
         tilemap.loadMap(Assets.getText("assets/data/sans-titre.csv"),
@@ -61,9 +70,6 @@ class PlayState extends FlxState
         add(treasure);
 
         adventurers = new Array<Adventurer>();
-        for (i in 0...10) {
-            spawnAdventurer();
-        }
 
         shots = new FlxGroup();
         shots.maxSize = 16;
@@ -74,12 +80,9 @@ class PlayState extends FlxState
     }
 
     private function spawnAdventurer() : Void {
-        var x = -1;
-        var y = -1;
-        do {
-            x = FlxRandom.intRanged(0, 20);
-            y = FlxRandom.intRanged(0, 20);
-        } while (tilemap.getTile(x, y) != 1);
+        var spawn = FlxRandom.getObject(spawnPoints);
+        var x = spawn[0];
+        var y = spawn[1];
         var adv = new Adventurer(x, y, this, tilemap, player, treasure);
         adventurers.push(adv);
         add(adv);
@@ -105,6 +108,8 @@ class PlayState extends FlxState
      * Function that is called once every frame.
      */
     override public function update():Void {
+        ticks += 1;
+
         // Collisions
         for (adv in adventurers) {
             if (player.cube.overlaps(adv)) {
@@ -118,6 +123,12 @@ class PlayState extends FlxState
         FlxG.overlap(shots, player.cube, onPlayerShot);
 
         hud.update();
+
+        // spawn adventurer
+        if (ticks - lastAdvSpawn > spawnDelay) {
+            lastAdvSpawn = ticks;
+            spawnAdventurer();
+        }
     }
 
     private function onAdventurerCollision(player : Player, adv : Adventurer)
