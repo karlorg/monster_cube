@@ -24,6 +24,7 @@ class PlayState extends FlxState
 
     private var adventurers : Array<Adventurer>;
     private var player : Player;
+    private var shots : Array<Shot>;
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
 
@@ -55,6 +56,8 @@ class PlayState extends FlxState
         for (i in 0...10) {
             spawnAdventurer();
         }
+
+        shots = new Array<Shot>();
     }
 
     private function spawnAdventurer() : Void {
@@ -64,9 +67,15 @@ class PlayState extends FlxState
             x = FlxRandom.intRanged(0, 20);
             y = FlxRandom.intRanged(0, 20);
         } while (tilemap.getTile(x, y) != 1);
-        var adv = new Adventurer(x, y, tilemap, player, treasure);
+        var adv = new Adventurer(x, y, this, tilemap, player, treasure);
         adventurers.push(adv);
         add(adv);
+    }
+
+    public function shoot(adv : Adventurer, shotAngle : Float) {
+        var shot = new Shot(adv.x, adv.y, shotAngle);
+        shots.push(shot);
+        add(shot);
     }
 
     /**
@@ -88,6 +97,19 @@ class PlayState extends FlxState
         for (adv in adventurers) {
             if (player.cube.overlaps(adv)) {
                 onAdventurerCollision(player, adv);
+            }
+        }
+
+        {
+            var removees = new Array<Shot>();
+            for (shot in shots) {
+                if (tilemap.overlaps(shot)) {
+                    removees.push(shot);
+                }
+            }
+            for (removee in removees) {
+                removees.remove(removee);
+                removee.destroy();
             }
         }
     }

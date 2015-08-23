@@ -29,15 +29,18 @@ class Adventurer extends FlxSprite {
     private var lastSawCube : Int;
     private var nodes : Array<FlxPoint>;
     private var player : Player;
+    private var playState : PlayState;
     private var ticks : Int;
     private var ticksToRun : Int;
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
 
     public function new(x : Int, y : Int,
+                        playState : PlayState,
                         tilemap : FlxTilemap, player : Player,
                         treasure : FlxSprite) {
         super();
+        this.playState = playState;
         this.tilemap = tilemap;
         this.player = player;
         this.treasure = treasure;
@@ -142,14 +145,19 @@ class Adventurer extends FlxSprite {
                 startPoint, playerPoint);
 
             if (ticks - lastShot < 10) {
+                var angleToPlayer = anglePlayerToMe + 180;
+                while (angleToPlayer > 180) { angleToPlayer -= 360; }
+
+                if (ticks - lastShot == 5 && canSeePlayer()) {
+                    playState.shoot(this, angleToPlayer);
+                }
+
                 if (canSeePlayer()) {
-                    var faceAngle = anglePlayerToMe + 180;
-                    while (faceAngle > 180) { faceAngle -= 360; }
-                    if (faceAngle <= 45 && faceAngle >= -45) {
+                    if (angleToPlayer <= 45 && angleToPlayer >= -45) {
                         animation.play("up");
-                    } else if (faceAngle >= 135 || faceAngle <= -135) {
+                    } else if (angleToPlayer >= 135 || angleToPlayer <= -135) {
                         animation.play("down");
-                    } else if (faceAngle > 45 && faceAngle < 135) {
+                    } else if (angleToPlayer > 45 && angleToPlayer < 135) {
                         animation.play("right");
                     } else {
                         animation.play("left");
