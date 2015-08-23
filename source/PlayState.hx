@@ -35,6 +35,7 @@ class PlayState extends FlxState
     private var ticks : Int;
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
+    private var treasureCarrier : Null<Adventurer>;
 
     /**
      * Function that is called up when to state is created to set
@@ -65,9 +66,9 @@ class PlayState extends FlxState
         add(hud);
         hud.update();
 
-        treasure = new FlxSprite(9 * tileWidth, 17 * tileHeight);
-        treasure.makeGraphic(tileWidth, tileHeight, FlxColor.GOLDEN);
+        treasure = new Treasure(9 * tileWidth, 17 * tileHeight);
         add(treasure);
+        treasureCarrier = null;
 
         adventurers = new Array<Adventurer>();
 
@@ -104,22 +105,22 @@ class PlayState extends FlxState
         super.destroy();
     }
 
-    /**
-     * Function that is called once every frame.
-     */
     override public function update():Void {
         ticks += 1;
+
+        FlxG.collide(shots, tilemap);
+
+        super.update();
 
         // Collisions
         for (adv in adventurers) {
             if (player.cube.overlaps(adv)) {
                 onAdventurerCollision(player, adv);
             }
+            if (adv.overlaps(treasure)) {
+                onPickupTreasure(adv);
+            }
         }
-        FlxG.collide(shots, tilemap);
-
-        super.update();
-
         FlxG.overlap(shots, player.cube, onPlayerShot);
 
         hud.update();
@@ -129,11 +130,20 @@ class PlayState extends FlxState
             lastAdvSpawn = ticks;
             spawnAdventurer();
         }
+
+        if (treasureCarrier != null) {
+            treasure.x = treasureCarrier.x;
+            treasure.y = treasureCarrier.y;
+        }
     }
 
     private function onAdventurerCollision(player : Player, adv : Adventurer)
         : Void {
         if (player.exists && adv.exists) {
+            if (adv.isCarryingTreasure()) {
+                treasureCarrier = null;
+                adv.dropTreasure();
+            }
             player.eat(adv);
         }
     }
@@ -141,6 +151,11 @@ class PlayState extends FlxState
     private function onPlayerShot(shot: FlxObject, cube: FlxObject) {
         shot.kill();
         player.onShot();
+    }
+
+    private function onPickupTreasure(adv : Adventurer) {
+        treasureCarrier = adv;
+        adv.pickupTreasure();
     }
 
 }

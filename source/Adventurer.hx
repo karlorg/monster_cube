@@ -24,6 +24,7 @@ class Adventurer extends FlxSprite {
     public var path : FlxPath;
 
     private var behavior : Behavior;
+    private var carryingTreasure : Bool;
     private var lastShot : Int;
     private var lastPathed : Int;
     private var lastSawCube : Int;
@@ -47,6 +48,7 @@ class Adventurer extends FlxSprite {
         this.x = x * tileWidth + 3;
         this.y = y * tileWidth + 3;
         this.behavior = Idle;
+        carryingTreasure = false;
 
         loadGraphic("assets/images/archer.png",
                     true,  // animated
@@ -66,6 +68,18 @@ class Adventurer extends FlxSprite {
         ticksToRun = -1;
     }
 
+    public function pickupTreasure() : Void {
+        carryingTreasure = true;
+    }
+
+    public function dropTreasure() : Void {
+        carryingTreasure = false;
+    }
+
+    public function isCarryingTreasure() : Bool {
+        return carryingTreasure;
+    }
+
     override public function update() : Void {
         super.update();
 
@@ -77,6 +91,7 @@ class Adventurer extends FlxSprite {
                                        player.cube.y + player.cube.height / 2);
         var treasurePoint = FlxPoint.get(treasure.x + treasure.width / 2,
                                          treasure.y + treasure.height / 2);
+        var spawnPoint = new FlxPoint(8, 24);
 
         function canSeePlayer() : Bool {
             if ((!player.hiding) &&
@@ -93,7 +108,11 @@ class Adventurer extends FlxSprite {
 
         case Idle:
             if (ticks - lastPathed > 59) {
-                nodes = tilemap.findPath(startPoint, treasurePoint, false);
+                if (!carryingTreasure) {
+                    nodes = tilemap.findPath(startPoint, treasurePoint, false);
+                } else {
+                    nodes = tilemap.findPath(startPoint, spawnPoint, false);
+                }
                 if (nodes != null && nodes.length > 0) {
                     path.start(this, nodes, speedIdle * 60);
                     lastPathed = ticks;
@@ -105,6 +124,22 @@ class Adventurer extends FlxSprite {
                 lastShot = ticks;
                 lastSawCube = ticks;
                 lastPathed = -10000;  // force re-path
+            }
+
+            if (!path.finished && path.nodes != null) {
+                if (path.angle >= -45 && path.angle <= 45) {
+                    animation.play("up");
+                } else if (path.angle >= 135 || path.angle <= -135) {
+                    animation.play("down");
+                } else if (path.angle > 45 && path.angle < 135) {
+                    animation.play("right");
+                } else {
+                    animation.play("left");
+                }
+            } else {
+                animation.curAnim.curFrame = 0;
+                animation.curAnim.stop();
+                nodes = null;
             }
 
         case Running:
