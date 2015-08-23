@@ -138,11 +138,12 @@ class Adventurer extends FlxSprite {
 
         case Shooting:
             path.cancel();
-            var anglePlayerToMe = FlxAngle.angleBetween(player.cube, this,
-                                                        true);  // asDegrees
+            var anglePlayerToMe = FlxAngle.getAngle(
+                startPoint, playerPoint);
+
             if (ticks - lastShot < 10) {
                 if (canSeePlayer()) {
-                    var faceAngle = anglePlayerToMe + 90 + 180;
+                    var faceAngle = anglePlayerToMe + 180;
                     while (faceAngle > 180) { faceAngle -= 360; }
                     if (faceAngle <= 45 && faceAngle >= -45) {
                         animation.play("up");
@@ -159,11 +160,9 @@ class Adventurer extends FlxSprite {
             } else {
 
                 // pick a new path and start running again
-                anglePlayerToMe = FlxAngle.getAngle(
-                    startPoint, playerPoint) + 90;
                 function candidate(dist : Float,
                                    rot : Float = 0.0) : FlxPoint {
-                    var result = new FlxPoint(dist * tileWidth, 0);
+                    var result = new FlxPoint(0, -dist * tileWidth);
                     result = FlxAngle.rotatePoint(result.x, result.y,
                                                   0, 0,
                                                   rot + anglePlayerToMe);
