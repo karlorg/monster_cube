@@ -113,12 +113,18 @@ class Adventurer extends FlxSprite {
                                candidate(4, 0),
                                candidate(4, 30),
                                candidate(4, -30),
+                               candidate(4, 50),
+                               candidate(4, -50),
                                candidate(3, 0),
                                candidate(3, 50),
                                candidate(3, -50),
+                               candidate(3, 70),
+                               candidate(3, -70),
                                candidate(2, 0),
                                candidate(2, 70),
                                candidate(2, -70),
+                               candidate(2, 90),
+                               candidate(2, -90),
                                candidate(1, 0),
                                candidate(1, 90),
                                candidate(1, -90)]) {
@@ -130,7 +136,9 @@ class Adventurer extends FlxSprite {
                     }
                 }
                 nodes = tilemap.findPath(startPoint, destPoint, false);
-                path.start(this, nodes, speedRun * 60);
+                if (nodes != null && nodes.length > 0) {
+                    path.start(this, nodes, speedRun * 60);
+                }
                 lastPathed = ticks;
 
                 // Check if we should stop running

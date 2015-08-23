@@ -42,12 +42,12 @@ class PlayState extends FlxState
         tilemap.setTileProperties(2, FlxObject.ANY);
         add(tilemap);
 
-        player = new Player(16, 16, tilemap);
+        player = new Player(9 * tileWidth, 11 * tileHeight, tilemap);
         add(player);
 
         FlxG.camera.follow(player.cube, FlxCamera.STYLE_LOCKON);
 
-        treasure = new FlxSprite(14 * tileWidth, 18 * tileHeight);
+        treasure = new FlxSprite(9 * tileWidth, 17 * tileHeight);
         treasure.makeGraphic(tileWidth, tileHeight, FlxColor.GOLDEN);
         add(treasure);
 
