@@ -23,6 +23,7 @@ class Player extends FlxSpriteGroup {
     static var tileHeight : Int = PlayState.tileHeight;
 
     public var cube : FlxSprite;
+    public var hp(default, null) : Int;
     public var hiding(get, null) : Bool;
     public var tilemap : FlxTilemap;
 
@@ -48,6 +49,8 @@ class Player extends FlxSpriteGroup {
         ticks = 0;
         lastMoved = -10000;
         alphaTween = null;
+
+        hp = 10;
     }
 
     public function get_hiding() : Bool {
@@ -70,6 +73,10 @@ class Player extends FlxSpriteGroup {
     }
 
     public function onShot() : Void {
+        if (hp > 0) {
+            hp -= 1;
+        }
+
         var targetAlpha : Float = 0;
         if (wasMoving) {
             targetAlpha = alphaMoving;
@@ -96,6 +103,7 @@ class Player extends FlxSpriteGroup {
         for (removee in removees) {
             digestees.remove(removee);
             removee.destroy();
+            hp += 1;
         }
 
         // Movement

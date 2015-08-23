@@ -24,6 +24,7 @@ class PlayState extends FlxState
     static inline public var tileHeight : Int = 16;
 
     private var adventurers : Array<Adventurer>;
+    private var hud : HUD;
     private var player : Player;
     private var shots : FlxGroup;
     private var tilemap : FlxTilemap;
@@ -50,6 +51,10 @@ class PlayState extends FlxState
         add(player);
 
         FlxG.camera.follow(player.cube, FlxCamera.STYLE_LOCKON);
+
+        hud = new HUD(player);
+        add(hud);
+        hud.update();
 
         treasure = new FlxSprite(9 * tileWidth, 17 * tileHeight);
         treasure.makeGraphic(tileWidth, tileHeight, FlxColor.GOLDEN);
@@ -111,6 +116,8 @@ class PlayState extends FlxState
         super.update();
 
         FlxG.overlap(shots, player.cube, onPlayerShot);
+
+        hud.update();
     }
 
     private function onAdventurerCollision(player : Player, adv : Adventurer)
