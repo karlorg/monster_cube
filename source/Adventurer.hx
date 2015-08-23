@@ -1,5 +1,6 @@
 package ;
 
+import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.tile.FlxTilemap;
 import flixel.util.FlxAngle;
@@ -92,6 +93,7 @@ class Adventurer extends FlxSprite {
         var treasurePoint = FlxPoint.get(treasure.x + treasure.width / 2,
                                          treasure.y + treasure.height / 2);
         var spawnPoint = new FlxPoint(8, 24);
+        var anglePlayerToMe = FlxAngle.getAngle(startPoint, playerPoint);
 
         function canSeePlayer() : Bool {
             if ((!player.hiding) &&
@@ -99,6 +101,27 @@ class Adventurer extends FlxSprite {
                 var distance = startPoint.distanceTo(playerPoint);
                 if (distance / tileWidth < 5) {
                     return true;
+                }
+            }
+            return false;
+        }
+
+        function lookingAtPlayer() : Bool {
+            // both have line of sight to player, and are facing the
+            // right way to see it
+            if (canSeePlayer()) {
+                // not sure why this isn't +180 degrees
+                var angleToPlayer = anglePlayerToMe;
+                while (angleToPlayer > 360) { angleToPlayer -= 360; }
+                switch (facing) {
+                case FlxObject.UP:
+                    return (angleToPlayer > -45) && (angleToPlayer < 45);
+                case FlxObject.RIGHT:
+                    return (angleToPlayer > 45) && (angleToPlayer < 135);
+                case FlxObject.DOWN:
+                    return (angleToPlayer > 135) || (angleToPlayer < -135);
+                case FlxObject.LEFT:
+                    return (angleToPlayer > -135) && (angleToPlayer < -45);
                 }
             }
             return false;
@@ -119,28 +142,14 @@ class Adventurer extends FlxSprite {
                 }
             }
 
-            if (canSeePlayer()) {
+            if (lookingAtPlayer()) {
                 this.behavior = Shooting;
                 lastShot = ticks;
                 lastSawCube = ticks;
                 lastPathed = -10000;  // force re-path
             }
 
-            if (!path.finished && path.nodes != null) {
-                if (path.angle >= -45 && path.angle <= 45) {
-                    animation.play("up");
-                } else if (path.angle >= 135 || path.angle <= -135) {
-                    animation.play("down");
-                } else if (path.angle > 45 && path.angle < 135) {
-                    animation.play("right");
-                } else {
-                    animation.play("left");
-                }
-            } else {
-                animation.curAnim.curFrame = 0;
-                animation.curAnim.stop();
-                nodes = null;
-            }
+            setAnimAndFacingFromPath();
 
         case Running:
             if (ticksToRun < 0) {
@@ -158,26 +167,10 @@ class Adventurer extends FlxSprite {
                 behavior = Idle;
             }
 
-            if (!path.finished && path.nodes != null) {
-                if (path.angle >= -45 && path.angle <= 45) {
-                    animation.play("up");
-                } else if (path.angle >= 135 || path.angle <= -135) {
-                    animation.play("down");
-                } else if (path.angle > 45 && path.angle < 135) {
-                    animation.play("right");
-                } else {
-                    animation.play("left");
-                }
-            } else {
-                animation.curAnim.curFrame = 0;
-                animation.curAnim.stop();
-                nodes = null;
-            }
+            setAnimAndFacingFromPath();
 
         case Shooting:
             path.cancel();
-            var anglePlayerToMe = FlxAngle.getAngle(
-                startPoint, playerPoint);
 
             if (ticks - lastShot < 10) {
                 var angleToPlayer = anglePlayerToMe + 180;
@@ -237,6 +230,28 @@ class Adventurer extends FlxSprite {
             }
         }
 
+    }
+
+    private function setAnimAndFacingFromPath() : Void {
+        if (!path.finished && path.nodes != null) {
+            if (path.angle >= -45 && path.angle <= 45) {
+                animation.play("up");
+                facing = FlxObject.UP;
+            } else if (path.angle >= 135 || path.angle <= -135) {
+                animation.play("down");
+                facing = FlxObject.DOWN;
+            } else if (path.angle > 45 && path.angle < 135) {
+                animation.play("right");
+                facing = FlxObject.RIGHT;
+            } else {
+                animation.play("left");
+                facing = FlxObject.LEFT;
+            }
+        } else {
+            animation.curAnim.curFrame = 0;
+            animation.curAnim.stop();
+            nodes = null;
+        }
     }
 
 }
