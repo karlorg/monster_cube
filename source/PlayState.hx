@@ -5,6 +5,7 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.group.FlxGroup;
 import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
 import flixel.ui.FlxButton;
@@ -24,7 +25,7 @@ class PlayState extends FlxState
 
     private var adventurers : Array<Adventurer>;
     private var player : Player;
-    private var shots : Array<Shot>;
+    private var shots : FlxGroup;
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
 
@@ -43,6 +44,8 @@ class PlayState extends FlxState
         tilemap.setTileProperties(2, FlxObject.ANY);
         add(tilemap);
 
+        FlxG.worldBounds.set(0, 0, tilemap.width, tilemap.height);
+
         player = new Player(9 * tileWidth, 11 * tileHeight, tilemap);
         add(player);
 
@@ -57,7 +60,12 @@ class PlayState extends FlxState
             spawnAdventurer();
         }
 
-        shots = new Array<Shot>();
+        shots = new FlxGroup();
+        shots.maxSize = 16;
+        add(shots);
+        for (i in 0...16) {
+            shots.add(new Shot());
+        }
     }
 
     private function spawnAdventurer() : Void {
@@ -73,9 +81,10 @@ class PlayState extends FlxState
     }
 
     public function shoot(adv : Adventurer, shotAngle : Float) {
-        var shot = new Shot(adv.x, adv.y, shotAngle);
-        shots.push(shot);
-        add(shot);
+        var shot = cast(shots.recycle(), Shot);
+        if (shot != null) {
+            shot.shoot(Math.floor(adv.x), Math.floor(adv.y), shotAngle);
+        }
     }
 
     /**
@@ -91,27 +100,15 @@ class PlayState extends FlxState
      * Function that is called once every frame.
      */
     override public function update():Void {
-        super.update();
-
         // Collisions
         for (adv in adventurers) {
             if (player.cube.overlaps(adv)) {
                 onAdventurerCollision(player, adv);
             }
         }
+        FlxG.collide(shots, tilemap);
 
-        {
-            var removees = new Array<Shot>();
-            for (shot in shots) {
-                if (tilemap.overlaps(shot)) {
-                    removees.push(shot);
-                }
-            }
-            for (removee in removees) {
-                removees.remove(removee);
-                removee.destroy();
-            }
-        }
+        super.update();
     }
 
     private function onAdventurerCollision(player : Player, adv : Adventurer)
