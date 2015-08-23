@@ -13,14 +13,12 @@ import flixel.tweens.FlxTween;
 import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 import flixel.util.FlxMath;
+import flixel.util.FlxPoint;
 import flixel.util.FlxRandom;
 import openfl.Assets;
 
 using flixel.util.FlxSpriteUtil;
 
-/**
- * A FlxState which can be used for the actual gameplay.
- */
 class PlayState extends FlxState
 {
 
@@ -41,11 +39,8 @@ class PlayState extends FlxState
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
     private var treasureCarrier : Null<Adventurer>;
+    private var treasureTakenState : Bool;
 
-    /**
-     * Function that is called up when to state is created to set
-     * it up.
-     */
     override public function create():Void {
         super.create();
 
@@ -53,6 +48,7 @@ class PlayState extends FlxState
         lastAdvSpawn = -10000;
 
         deadState = false;
+        treasureTakenState = false;
 
         tilemap = new FlxTilemap();
         tilemap.loadMap(Assets.getText("assets/data/sans-titre.csv"),
@@ -113,8 +109,8 @@ class PlayState extends FlxState
     }
 
     override public function update():Void {
-        if (deadState) {
-            if (FlxG.keys.pressed.R) {
+        if (deadState || treasureTakenState) {
+            if (FlxG.keys.justPressed.R) {
                 FlxG.switchState(new PlayState());
             }
             return;
@@ -149,6 +145,20 @@ class PlayState extends FlxState
             treasure.x = treasureCarrier.x;
             treasure.y = treasureCarrier.y;
         }
+
+        // check for adventurers escaping with treasure
+        if (treasure.x < 4 || treasure.y < 4
+            || treasure.x > FlxG.worldBounds.width - treasure.width - 4) {
+            treasureTakenState = true;
+            var followee = new FlxObject(player.cube.x + player.cube.width / 2,
+                                         player.cube.y + player.cube.height / 2);
+            FlxG.camera.follow(followee);
+            FlxTween.tween(followee,
+                           {x: treasure.x, y: treasure.y},
+                           1.5,
+                           {ease: FlxEase.quadInOut,
+                            complete: onTreasureTweenComplete});
+        }
     }
 
     private function onAdventurerCollision(player : Player, adv : Adventurer)
@@ -176,13 +186,26 @@ class PlayState extends FlxState
     }
 
     private function onPickupTreasure(adv : Adventurer) {
-        treasureCarrier = adv;
-        adv.pickupTreasure();
+        if (treasureCarrier == null) {
+            treasureCarrier = adv;
+            adv.pickupTreasure();
+        }
     }
 
     private function playerDeathComplete(t : FlxTween) : Void {
         var msg = new FlxText(0, 0, -1, "Game Over\nPress R to restart", 20);
         msg.alignment = "center";
+        msg.scrollFactor.x = 0;
+        msg.scrollFactor.y = 0;
+        msg.screenCenter();
+        add(msg);
+    }
+
+    private function onTreasureTweenComplete(t : FlxTween) : Void {
+        var msg = new FlxText(0, 0, -1, "Game Over\nPress R to restart", 20);
+        msg.alignment = "center";
+        msg.scrollFactor.x = 0;
+        msg.scrollFactor.y = 0;
         msg.screenCenter();
         add(msg);
     }
