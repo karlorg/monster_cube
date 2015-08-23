@@ -15,15 +15,19 @@ class Shot extends FlxSprite {
         super();
         this.x = x;
         this.y = y;
-        this.angle = shotAngle;
 
-        makeGraphic(2, 2, FlxColor.WHITE);
+        loadGraphic("assets/images/arrow.png",
+                    false,  // animated
+                    16, 16);
+        offset.x = 7;
+        offset.y = 6;
+        angle = shotAngle + 180;
     }
 
     override public function update() : Void {
         super.update();
 
-        var moveVector = FlxAngle.rotatePoint(0, -speed, 0, 0, angle);
+        var moveVector = FlxAngle.rotatePoint(0, -speed, 0, 0, angle + 180);
         x += moveVector.x;
         y += moveVector.y;
     }
