@@ -29,7 +29,7 @@ class PlayState extends FlxState
     static inline public var tileWidth : Int = 16;
     static inline public var tileHeight : Int = 16;
 
-    private var adventurers : Array<Adventurer>;
+    private var adventurers : FlxGroup;
     private var hud : HUD;
     private var deadState : Bool;
     private var lastAdvSpawn : Int;
@@ -73,7 +73,13 @@ class PlayState extends FlxState
         add(treasure);
         treasureCarrier = null;
 
-        adventurers = new Array<Adventurer>();
+        adventurers = new FlxGroup();
+        adventurers.maxSize = 32;
+        add(adventurers);
+        for (i in 0...32) {
+            adventurers.add(new Adventurer(this, tilemap,
+                                           player, treasure));
+        }
 
         shots = new FlxGroup();
         shots.maxSize = 16;
@@ -84,12 +90,13 @@ class PlayState extends FlxState
     }
 
     private function spawnAdventurer() : Void {
-        var spawn = FlxRandom.getObject(spawnPoints);
-        var x = spawn[0];
-        var y = spawn[1];
-        var adv = new Adventurer(x, y, this, tilemap, player, treasure);
-        adventurers.push(adv);
-        add(adv);
+        var adv = cast(adventurers.recycle(), Adventurer);
+        if (adv != null) {
+            var spawn = FlxRandom.getObject(spawnPoints);
+            var x = spawn[0];
+            var y = spawn[1];
+            adv.spawn(x, y);
+        }
     }
 
     public function shoot(adv : Adventurer, shotAngle : Float) {
@@ -123,14 +130,8 @@ class PlayState extends FlxState
         super.update();
 
         // Collisions
-        for (adv in adventurers) {
-            if (player.cube.overlaps(adv)) {
-                onAdventurerCollision(player, adv);
-            }
-            if (adv.overlaps(treasure)) {
-                onPickupTreasure(adv);
-            }
-        }
+        FlxG.overlap(adventurers, player.cube, onAdventurerCollision);
+        FlxG.overlap(adventurers, treasure, onPickupTreasure);
         FlxG.overlap(shots, player.cube, onPlayerShot);
 
         hud.setSeconds(Math.floor(ticks/60));
@@ -162,13 +163,15 @@ class PlayState extends FlxState
         }
     }
 
-    private function onAdventurerCollision(player : Player, adv : Adventurer)
+    private function onAdventurerCollision(adv : Adventurer, ply : Player)
         : Void {
+        if (adv.isCarryingTreasure()) {
+            adv.dropTreasure();
+        }
+        if (treasureCarrier == adv) {
+            treasureCarrier = null;
+        }
         if (player.exists && adv.exists) {
-            if (adv.isCarryingTreasure()) {
-                treasureCarrier = null;
-                adv.dropTreasure();
-            }
             player.eat(adv);
         }
     }
@@ -186,7 +189,7 @@ class PlayState extends FlxState
         }
     }
 
-    private function onPickupTreasure(adv : Adventurer) {
+    private function onPickupTreasure(adv : Adventurer, trs : Treasure) {
         if (treasureCarrier == null) {
             treasureCarrier = adv;
             adv.pickupTreasure();

@@ -41,8 +41,7 @@ class Adventurer extends FlxSprite {
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
 
-    public function new(x : Int, y : Int,
-                        playState : PlayState,
+    public function new(playState : PlayState,
                         tilemap : FlxTilemap, player : Player,
                         treasure : FlxSprite) {
         super();
@@ -50,8 +49,6 @@ class Adventurer extends FlxSprite {
         this.tilemap = tilemap;
         this.player = player;
         this.treasure = treasure;
-        this.x = x * tileWidth + 3;
-        this.y = y * tileWidth + 3;
         this.behavior = Idle;
         carryingTreasure = false;
 
@@ -67,6 +64,13 @@ class Adventurer extends FlxSprite {
 
         path = new FlxPath();
 
+        exists = false;
+    }
+
+    public function spawn(x : Int, y : Int) {
+        super.reset(x * tileWidth + 3, y * tileWidth + 3);
+
+        solid = true;
         ticks = 0;
         lastPathed = -10000;
         lastSawCube = -10000;
@@ -86,6 +90,11 @@ class Adventurer extends FlxSprite {
     }
 
     override public function update() : Void {
+        if (!alive) {
+            exists = false;
+            return;
+        }
+
         super.update();
 
         ticks += 1;
