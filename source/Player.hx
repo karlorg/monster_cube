@@ -3,12 +3,14 @@ package ;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
+import flixel.group.FlxSpriteGroup;
 import flixel.tile.FlxTilemap;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import flixel.util.FlxRandom;
 
-class Player extends FlxSprite {
+class Player extends FlxSpriteGroup {
 
     static inline var alphaHiding : Float = 0.03;
     static inline var alphaMoving : Float = 0.3;
@@ -17,9 +19,11 @@ class Player extends FlxSprite {
     static var tileWidth : Int = PlayState.tileWidth;
     static var tileHeight : Int = PlayState.tileHeight;
 
-    public var tilemap : FlxTilemap;
+    public var cube : FlxSprite;
     public var hiding(get, null) : Bool;
+    public var tilemap : FlxTilemap;
 
+    private var digestees : Array<Digestee>;
     private var lastMoved : Int;
     private var ticks : Int;
     private var wasMoving : Bool;
@@ -29,8 +33,11 @@ class Player extends FlxSprite {
 
         this.tilemap = tilemap;
 
-        makeGraphic(32, 32, FlxColor.AQUAMARINE);
-        alpha = alphaHiding;
+        cube = new FlxSprite(0, 0);
+        add(cube);
+        cube.makeGraphic(32, 32, FlxColor.AQUAMARINE);
+        cube.alpha = alphaHiding;
+        digestees = new Array<Digestee>();
 
         wasMoving = false;
 
@@ -42,10 +49,40 @@ class Player extends FlxSprite {
         return (!wasMoving) && (ticks - lastMoved > hideDelay * 60 / 2);
     }
 
+    public function eat(adv : Adventurer) : Void {
+        var digestee = new Digestee();
+        digestee.x = FlxRandom.floatRanged(3,
+                                           cube.width - digestee.width - 3);
+        digestee.y = FlxRandom.floatRanged(3,
+                                           cube.height - digestee.height - 3);
+        digestees.push(digestee);
+        add(digestee);
+        adv.kill();
+    }
+
     override public function update() : Void {
         super.update();
 
         ticks += 1;
+
+        // Digest stuff
+        var removees = new Array<Digestee>();
+        for (digestee in digestees) {
+            if (digestee.isDigested()) {
+                removees.push(digestee);
+            }
+        }
+        for (removee in removees) {
+            digestees.remove(removee);
+            removee.destroy();
+        }
+
+        // Movement
+        //
+        // this whole complex movement system is built on the
+        // assumption that we will only ever move inside corridors
+        // exactly wide enough to hold us.  Things will probably go
+        // wonky if the maps ever break that assumption.
 
         var up  = FlxG.keys.anyPressed(["UP", "W"]);
         var down  = FlxG.keys.anyPressed(["DOWN", "R"]);
@@ -54,13 +91,6 @@ class Player extends FlxSprite {
 
         if (up && down) { up = down = false; }
         if (left && right) { left = right = false; }
-
-        // Movement
-        //
-        // this whole complex movement system is built on the
-        // assumption that we will only ever move inside corridors
-        // exactly wide enough to hold us.  Things will probably go
-        // wonky if the maps ever break that assumption.
 
         inline function isWall(tileIndex : Int) : Bool {
             return (tilemap.getTileCollisions(tileIndex) != FlxObject.NONE);
@@ -340,14 +370,54 @@ class Player extends FlxSprite {
         if (!wasMoving) {
             if (up || down || left || right) {
                 wasMoving = true;
-                FlxTween.tween(this, {alpha: alphaMoving}, hideDelay,
+                FlxTween.tween(cube, {alpha: alphaMoving}, hideDelay,
                                {ease: FlxEase.quadIn});
             }
         } else {
             if (!(up || down || left || right)) {
                 wasMoving = false;
-                FlxTween.tween(this, {alpha: alphaHiding}, hideDelay,
+                FlxTween.tween(cube, {alpha: alphaHiding}, hideDelay,
                                {ease: FlxEase.quadIn});
+            }
+        }
+    }
+
+}
+
+class Digestee extends FlxSprite {
+
+    static inline var lifespan : Int = 400;
+    private var ticks : Int;
+
+    public function new() {
+        super();
+        ticks = 0;
+        makeGraphic(10, 10, FlxColor.WHITE);
+    }
+
+    public inline function isDigested() : Bool {
+        return ticks >= lifespan;
+    }
+
+    override public function update() {
+        super.update();
+
+        ticks += 1;
+
+        alpha = 0.1 + 0.9 * (1 - ticks / lifespan);
+
+        // wobble around a bit
+        if (FlxRandom.chanceRoll(100/120)) {
+            var offset : Float;
+            if (FlxRandom.chanceRoll(50)) {
+                offset = 1;
+            } else {
+                offset = -1;
+            }
+            if (FlxRandom.chanceRoll(50)) {
+                x += offset;
+            } else {
+                y += offset;
             }
         }
     }

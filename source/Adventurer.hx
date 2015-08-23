@@ -78,7 +78,7 @@ class Adventurer extends FlxSprite {
         case Idle:
             if (ticks - lastPathed > 59) {
                 nodes = tilemap.findPath(startPoint, treasurePoint, false);
-                if (nodes.length > 0) {
+                if (nodes != null && nodes.length > 0) {
                     path.start(this, nodes, speedIdle * 60);
                     lastPathed = ticks;
                 }

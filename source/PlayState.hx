@@ -45,7 +45,7 @@ class PlayState extends FlxState
         player = new Player(16, 16, tilemap);
         add(player);
 
-        FlxG.camera.follow(player, FlxCamera.STYLE_LOCKON);
+        FlxG.camera.follow(player.cube, FlxCamera.STYLE_LOCKON);
 
         treasure = new FlxSprite(14 * tileWidth, 18 * tileHeight);
         treasure.makeGraphic(tileWidth, tileHeight, FlxColor.GOLDEN);
@@ -86,7 +86,7 @@ class PlayState extends FlxState
 
         // Collisions
         for (adv in adventurers) {
-            if (player.overlaps(adv)) {
+            if (player.cube.overlaps(adv)) {
                 onAdventurerCollision(player, adv);
             }
         }
@@ -95,7 +95,7 @@ class PlayState extends FlxState
     private function onAdventurerCollision(player : Player, adv : Adventurer)
         : Void {
         if (player.exists && adv.exists) {
-            adv.kill();
+            player.eat(adv);
         }
     }
 
