@@ -46,7 +46,9 @@ class Player extends FlxSpriteGroup {
     }
 
     public function get_hiding() : Bool {
-        return (!wasMoving) && (ticks - lastMoved > hideDelay * 60 / 2);
+        return (!wasMoving)
+            && (digestees.length == 0)
+            && (ticks - lastMoved > hideDelay * 60 / 2);
     }
 
     public function eat(adv : Adventurer) : Void {

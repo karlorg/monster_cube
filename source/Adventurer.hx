@@ -57,13 +57,13 @@ class Adventurer extends FlxSprite {
 
         var startPoint = FlxPoint.get(x + width / 2,
                                       y + height / 2);
-        var playerPoint = FlxPoint.get(player.x + player.width / 2,
-                                       player.y + player.height / 2);
+        var playerPoint = FlxPoint.get(player.cube.x + player.cube.width / 2,
+                                       player.cube.y + player.cube.height / 2);
         var treasurePoint = FlxPoint.get(treasure.x + treasure.width / 2,
                                          treasure.y + treasure.height / 2);
 
         function canSeePlayer() : Bool {
-            if (!player.hiding &&
+            if ((!player.hiding) &&
                 tilemap.ray(startPoint, playerPoint)) {
                 var distance = startPoint.distanceTo(playerPoint);
                 if (distance / tileWidth < 5) {
