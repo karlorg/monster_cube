@@ -8,11 +8,15 @@ import flixel.FlxState;
 import flixel.group.FlxGroup;
 import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 import flixel.util.FlxMath;
 import flixel.util.FlxRandom;
 import openfl.Assets;
+
+using flixel.util.FlxSpriteUtil;
 
 /**
  * A FlxState which can be used for the actual gameplay.
@@ -29,6 +33,7 @@ class PlayState extends FlxState
 
     private var adventurers : Array<Adventurer>;
     private var hud : HUD;
+    private var deadState : Bool;
     private var lastAdvSpawn : Int;
     private var player : Player;
     private var shots : FlxGroup;
@@ -46,6 +51,8 @@ class PlayState extends FlxState
 
         ticks = 0;
         lastAdvSpawn = -10000;
+
+        deadState = false;
 
         tilemap = new FlxTilemap();
         tilemap.loadMap(Assets.getText("assets/data/sans-titre.csv"),
@@ -106,6 +113,13 @@ class PlayState extends FlxState
     }
 
     override public function update():Void {
+        if (deadState) {
+            if (FlxG.keys.pressed.R) {
+                FlxG.switchState(new PlayState());
+            }
+            return;
+        }
+
         ticks += 1;
 
         FlxG.collide(shots, tilemap);
@@ -151,11 +165,26 @@ class PlayState extends FlxState
     private function onPlayerShot(shot: FlxObject, cube: FlxObject) {
         shot.kill();
         player.onShot();
+        if (player.hp <= 0) {
+            deadState = true;
+            FlxTween.color(player.cube, 3.0,
+                           player.cube.color, FlxColor.BLACK,
+                           player.cube.alpha, 0.8,
+                           {ease: FlxEase.quadInOut,
+                            complete: playerDeathComplete});
+        }
     }
 
     private function onPickupTreasure(adv : Adventurer) {
         treasureCarrier = adv;
         adv.pickupTreasure();
+    }
+
+    private function playerDeathComplete(t : FlxTween) : Void {
+        var msg = new FlxText(0, 0, -1, "Game Over\nPress R to restart", 20);
+        msg.alignment = "center";
+        msg.screenCenter();
+        add(msg);
     }
 
 }
