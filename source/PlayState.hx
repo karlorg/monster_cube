@@ -133,6 +133,7 @@ class PlayState extends FlxState
         }
         FlxG.overlap(shots, player.cube, onPlayerShot);
 
+        hud.setSeconds(Math.floor(ticks/60));
         hud.update();
 
         // spawn adventurer
@@ -193,16 +194,18 @@ class PlayState extends FlxState
     }
 
     private function playerDeathComplete(t : FlxTween) : Void {
-        var msg = new FlxText(0, 0, -1, "Game Over\nPress R to restart", 20);
-        msg.alignment = "center";
-        msg.scrollFactor.x = 0;
-        msg.scrollFactor.y = 0;
-        msg.screenCenter();
-        add(msg);
+        showGameOver();
     }
 
     private function onTreasureTweenComplete(t : FlxTween) : Void {
-        var msg = new FlxText(0, 0, -1, "Game Over\nPress R to restart", 20);
+        showGameOver();
+    }
+
+    private function showGameOver() : Void {
+        var txt = "Game Over\n";
+        txt += 'You lived ${Math.floor(ticks/60)} seconds\n';
+        txt += "Press R to restart";
+        var msg = new FlxText(0, 0, -1, txt, 20);
         msg.alignment = "center";
         msg.scrollFactor.x = 0;
         msg.scrollFactor.y = 0;
