@@ -52,11 +52,13 @@ class Player extends FlxSpriteGroup {
     }
 
     public function eat(adv : Adventurer) : Void {
-        var digestee = new Digestee();
-        digestee.x = FlxRandom.floatRanged(3,
-                                           cube.width - digestee.width - 3);
-        digestee.y = FlxRandom.floatRanged(3,
-                                           cube.height - digestee.height - 3);
+        var xStart = adv.x - this.x;
+        var yStart = adv.y - this.y;
+
+        var digestee = new Digestee(cube);
+        digestee.x = xStart;
+        digestee.y = yStart;
+
         digestees.push(digestee);
         add(digestee);
         adv.kill();
@@ -389,11 +391,15 @@ class Player extends FlxSpriteGroup {
 class Digestee extends FlxSprite {
 
     static inline var lifespan : Int = 400;
+    private var cube : FlxSprite;
     private var rotRate : Float;  // rotation in degrees per frame
     private var ticks : Int;
+    private var xTarget : Float;
+    private var yTarget : Float;
 
-    public function new() {
+    public function new(cube : FlxSprite) {
         super();
+        this.cube = cube;
         ticks = 0;
         loadGraphic("assets/images/archer.png",
                     true,  // animated
@@ -403,8 +409,17 @@ class Digestee extends FlxSprite {
         animation.curAnim.stop();
         animation.curAnim.curFrame = 0;
 
-        angle = FlxRandom.floatRanged(-180, 180);
         rotRate = FlxRandom.floatRanged(-20 / 60, 20 / 60);
+
+        var targetAngle = FlxRandom.floatRanged(-180, 180);
+        FlxTween.tween(this, {angle: targetAngle}, 0.5,
+                       {ease: FlxEase.quadIn});
+
+        // can't tween the movement from outside the cube to inside
+        // since tweens apparently don't know to follow the host
+        // group's movement
+        xTarget = FlxRandom.floatRanged(3, cube.width - width - 3);
+        yTarget = FlxRandom.floatRanged(3, cube.height - height - 3);
     }
 
     public inline function isDigested() : Bool {
@@ -418,6 +433,10 @@ class Digestee extends FlxSprite {
 
         alpha = 0.1 + 0.9 * (1 - ticks / lifespan);
         angle += rotRate;
+
+        // manually tween sprite into position at start of life
+        x += (cube.x + xTarget - x) * 0.1;
+        y += (cube.y + yTarget - y) * 0.1;
 
         if (ticks / lifespan > 0.66) {
             animation.curAnim.curFrame = 2;
@@ -434,9 +453,9 @@ class Digestee extends FlxSprite {
                 offset = -1;
             }
             if (FlxRandom.chanceRoll(50)) {
-                x += offset;
+                xTarget += offset;
             } else {
-                y += offset;
+                yTarget += offset;
             }
         }
     }
