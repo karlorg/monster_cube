@@ -21,6 +21,10 @@ class Adventurer extends FlxSprite {
     static var speedRun : Float = 1.1;
     static var tileWidth : Int = PlayState.tileWidth;
     static var tileHeight : Int = PlayState.tileHeight;
+    // viewAngle is the number of degrees away from straight ahead the
+    // cube can be in order to be seen.  Will probably break if set
+    // higher than 90.
+    static var viewAngle : Int = 80;
 
     public var path : FlxPath;
 
@@ -115,13 +119,17 @@ class Adventurer extends FlxSprite {
                 while (angleToPlayer > 360) { angleToPlayer -= 360; }
                 switch (facing) {
                 case FlxObject.UP:
-                    return (angleToPlayer > -45) && (angleToPlayer < 45);
+                    return (angleToPlayer > -viewAngle)
+                        && (angleToPlayer < viewAngle);
                 case FlxObject.RIGHT:
-                    return (angleToPlayer > 45) && (angleToPlayer < 135);
+                    return (angleToPlayer > 90-viewAngle)
+                        && (angleToPlayer < 90+viewAngle);
                 case FlxObject.DOWN:
-                    return (angleToPlayer > 135) || (angleToPlayer < -135);
+                    return (angleToPlayer > 180-viewAngle)
+                        || (angleToPlayer < -180+viewAngle);
                 case FlxObject.LEFT:
-                    return (angleToPlayer > -135) && (angleToPlayer < -45);
+                    return (angleToPlayer > -90-viewAngle)
+                        && (angleToPlayer < -90+viewAngle);
                 }
             }
             return false;
