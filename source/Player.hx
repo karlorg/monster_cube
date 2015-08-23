@@ -389,12 +389,22 @@ class Player extends FlxSpriteGroup {
 class Digestee extends FlxSprite {
 
     static inline var lifespan : Int = 400;
+    private var rotRate : Float;  // rotation in degrees per frame
     private var ticks : Int;
 
     public function new() {
         super();
         ticks = 0;
-        makeGraphic(10, 10, FlxColor.WHITE);
+        loadGraphic("assets/images/archer.png",
+                    true,  // animated
+                    16, 16);
+        animation.add("rot", [12, 13, 14]);
+        animation.play("rot");
+        animation.curAnim.stop();
+        animation.curAnim.curFrame = 0;
+
+        angle = FlxRandom.floatRanged(-180, 180);
+        rotRate = FlxRandom.floatRanged(-20 / 60, 20 / 60);
     }
 
     public inline function isDigested() : Bool {
@@ -407,6 +417,13 @@ class Digestee extends FlxSprite {
         ticks += 1;
 
         alpha = 0.1 + 0.9 * (1 - ticks / lifespan);
+        angle += rotRate;
+
+        if (ticks / lifespan > 0.66) {
+            animation.curAnim.curFrame = 2;
+        } else if (ticks / lifespan > 0.33) {
+            animation.curAnim.curFrame = 1;
+        }
 
         // wobble around a bit
         if (FlxRandom.chanceRoll(100/120)) {

@@ -41,7 +41,15 @@ class Adventurer extends FlxSprite {
         this.y = y * tileWidth + 3;
         this.behavior = Idle;
 
-        makeGraphic(10, 10, FlxColor.WHITE);
+        loadGraphic("assets/images/archer.png",
+                    true,  // animated
+                    16, 16);
+        width = height = 10;
+        offset.x = offset.y = 3;
+        animation.add("down", [0, 1, 0, 2]);
+        animation.add("up", [3, 4, 3, 5]);
+        animation.add("right", [6, 7, 6, 8]);
+        animation.add("left", [9, 10, 9, 11]);
 
         path = new FlxPath();
 
@@ -88,7 +96,6 @@ class Adventurer extends FlxSprite {
                 this.behavior = Running;
                 lastSawCube = ticks;
                 lastPathed = -10000;  // force re-path
-                makeGraphic(10, 10, FlxColor.RED);
             }
 
         case Running:
@@ -147,11 +154,27 @@ class Adventurer extends FlxSprite {
                 }
                 if (ticks - lastSawCube > 8 * 60) {
                     behavior = Idle;
-                    makeGraphic(10, 10, FlxColor.WHITE);
                 }
             }
 
         }
+
+        if (!path.finished && path.nodes != null) {
+            if (path.angle <= 45 && path.angle >= -45) {
+                animation.play("up");
+            } else if (path.angle >= 135 && path.angle <= -135) {
+                animation.play("down");
+            } else if (path.angle > 45 && path.angle < 135) {
+                animation.play("right");
+            } else {
+                animation.play("left");
+            }
+        } else {
+            animation.curAnim.curFrame = 0;
+            animation.curAnim.stop();
+            nodes = null;
+        }
+
     }
 
 }
