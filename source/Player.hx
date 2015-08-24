@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.group.FlxTypedSpriteGroup;
 import flixel.tile.FlxTilemap;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -28,7 +29,7 @@ class Player extends FlxSpriteGroup {
     public var tilemap : FlxTilemap;
 
     private var alphaTween : Null<FlxTween>;
-    private var digestees : Array<Digestee>;
+    private var digestees : FlxTypedSpriteGroup<Digestee>;
     private var lastMoved : Int;
     private var ticks : Int;
     private var wasMoving : Bool;
@@ -39,10 +40,16 @@ class Player extends FlxSpriteGroup {
         this.tilemap = tilemap;
 
         cube = new FlxSprite(0, 0);
-        add(cube);
         cube.makeGraphic(32, 32, colorNormal);
         cube.alpha = alphaHiding;
-        digestees = new Array<Digestee>();
+
+        digestees = new FlxTypedSpriteGroup<Digestee>();
+        digestees.maxSize = 8;
+        for (i in 0...8) {
+            digestees.add(new Digestee(cube));
+        }
+        add(digestees);
+        add(cube);
 
         wasMoving = false;
 
@@ -55,20 +62,21 @@ class Player extends FlxSpriteGroup {
 
     public function get_hiding() : Bool {
         return (!wasMoving)
-            && (digestees.length == 0)
+            && (digestees.countLiving() == 0)
             && (ticks - lastMoved > hideDelay * 60 / 2);
     }
 
     public function eat(adv : Adventurer) : Void {
-        var xStart = adv.x - this.x;
-        var yStart = adv.y - this.y;
+        var xStart = cube.x + adv.x - this.x;
+        var yStart = cube.y + adv.y - this.y;
 
-        var digestee = new Digestee(cube);
-        digestee.x = xStart;
-        digestee.y = yStart;
+        var digestee : Digestee = cast(digestees.recycle(), Digestee);
+        if (digestee == null) {
+            digestee = cast(digestees.getRandom(), Digestee);
+            digestee.kill();
+        }
+        digestee.spawn(Std.int(xStart), Std.int(yStart));
 
-        digestees.push(digestee);
-        add(digestee);
         adv.kill();
     }
 
@@ -94,17 +102,12 @@ class Player extends FlxSpriteGroup {
         ticks += 1;
 
         // Digest stuff
-        var removees = new Array<Digestee>();
-        for (digestee in digestees) {
-            if (digestee.isDigested()) {
-                removees.push(digestee);
-            }
-        }
-        for (removee in removees) {
-            digestees.remove(removee);
-            removee.destroy();
-            hp += 1;
-        }
+        digestees.forEachAlive(function (d : Digestee) {
+                if (d.isDigested()) {
+                    d.kill();
+                    hp += 1;
+                }
+            });
 
         // Movement
         //
@@ -429,7 +432,6 @@ class Digestee extends FlxSprite {
     public function new(cube : FlxSprite) {
         super();
         this.cube = cube;
-        ticks = 0;
         loadGraphic("assets/images/archer.png",
                     true,  // animated
                     16, 16);
@@ -437,6 +439,13 @@ class Digestee extends FlxSprite {
         animation.play("rot");
         animation.curAnim.stop();
         animation.curAnim.curFrame = 0;
+
+        exists = false;
+    }
+
+    public function spawn(x : Int, y : Int) : Void {
+        super.reset(x, y);
+        ticks = 0;
 
         rotRate = FlxRandom.floatRanged(-20 / 60, 20 / 60);
 
@@ -449,6 +458,13 @@ class Digestee extends FlxSprite {
         // group's movement
         xTarget = FlxRandom.floatRanged(3, cube.width - width - 3);
         yTarget = FlxRandom.floatRanged(3, cube.height - height - 3);
+
+        animation.play("rot");
+        animation.curAnim.stop();
+        animation.curAnim.curFrame = 0;
+
+        alive = true;
+        exists = true;
     }
 
     public inline function isDigested() : Bool {
