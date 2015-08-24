@@ -67,7 +67,6 @@ class PlayState extends FlxState
 
         hud = new HUD(player);
         add(hud);
-        hud.update();
 
         treasure = new Treasure(9 * tileWidth, 17 * tileHeight);
         add(treasure);
@@ -135,7 +134,6 @@ class PlayState extends FlxState
         FlxG.overlap(shots, player.cube, onPlayerShot);
 
         hud.setSeconds(Math.floor(ticks/60));
-        hud.update();
 
         // spawn adventurer
         if (ticks - lastAdvSpawn > spawnDelay) {
