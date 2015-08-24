@@ -41,7 +41,7 @@ class PlayState extends FlxState
     private var sndCubePain : Array<FlxSound>;
     private var ticks : Int;
     private var tilemap : FlxTilemap;
-    private var treasure : FlxSprite;
+    private var treasure : Treasure;
     private var treasureCarrier : Null<Adventurer>;
     private var treasureTakenState : Bool;
 
@@ -185,6 +185,7 @@ class PlayState extends FlxState
         var _adv = cast(adv, Adventurer);
         if (_adv.isCarryingTreasure()) {
             _adv.dropTreasure();
+            treasure.dropped();
         }
         if (treasureCarrier == _adv) {
             treasureCarrier = null;
@@ -217,6 +218,7 @@ class PlayState extends FlxState
         if (treasureCarrier == null) {
             treasureCarrier = adv;
             adv.pickupTreasure();
+            treasure.pickedUp();
         }
     }
 
