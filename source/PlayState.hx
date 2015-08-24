@@ -36,7 +36,9 @@ class PlayState extends FlxState
     private var lastAdvSpawn : Int;
     private var player : Player;
     private var shots : FlxGroup;
+    private var sndBowHit : FlxSound;
     private var sndCubeDeath : FlxSound;
+    private var sndCubePain : Array<FlxSound>;
     private var ticks : Int;
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
@@ -89,7 +91,19 @@ class PlayState extends FlxState
             shots.add(new Shot());
         }
 
+        sndBowHit = FlxG.sound.load("assets/sounds/bowhit.wav");
+
         sndCubeDeath = FlxG.sound.load("assets/sounds/cubedeath.wav");
+
+        sndCubePain = new Array<FlxSound>();
+        sndCubePain.push(
+            FlxG.sound.load("assets/sounds/cubepain0.wav"));
+        sndCubePain.push(
+            FlxG.sound.load("assets/sounds/cubepain1.wav"));
+        sndCubePain.push(
+            FlxG.sound.load("assets/sounds/cubepain2.wav"));
+        sndCubePain.push(
+            FlxG.sound.load("assets/sounds/cubepain3.wav"));
     }
 
     private function spawnAdventurer() : Void {
@@ -182,6 +196,9 @@ class PlayState extends FlxState
     private function onPlayerShot(shot: FlxObject, cube: FlxObject) {
         shot.kill();
         player.onShot();
+        sndBowHit.play();
+        var sndPain = FlxRandom.getObject(sndCubePain);
+        sndPain.play();
         if (player.hp <= 0) {
             deadState = true;
             sndCubeDeath.play();

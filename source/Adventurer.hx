@@ -40,6 +40,7 @@ class Adventurer extends FlxSprite {
     private var player : Player;
     private var playState : PlayState;
     private var sndScreams : Array<FlxSound>;
+    private var sndShoot : FlxSound;
     private var ticks : Int;
     private var ticksToRun : Int;
     private var tilemap : FlxTilemap;
@@ -73,10 +74,8 @@ class Adventurer extends FlxSprite {
             FlxG.sound.load("assets/sounds/WilhelmScreamGurgly.wav"));
         sndScreams.push(
             FlxG.sound.load("assets/sounds/HowieScreamGurgly.wav"));
-        /*
-        sndScreams.push(
-            FlxG.sound.load("assets/sounds/GurgleScream.wav"));
-        */
+
+        sndShoot = FlxG.sound.load("assets/sounds/bowshot.wav");
 
         exists = false;
     }
@@ -224,6 +223,7 @@ class Adventurer extends FlxSprite {
                 while (angleToPlayer > 180) { angleToPlayer -= 360; }
 
                 if (ticks - lastShot == 5 && canSeePlayer()) {
+                    sndShoot.play();
                     playState.shoot(this, angleToPlayer);
                 }
 
