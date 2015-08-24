@@ -36,6 +36,7 @@ class Player extends FlxSpriteGroup {
     private var digestees : FlxTypedSpriteGroup<Digestee>;
     private var lastMoved : Int;
     private var lastMoveSnd : Int;
+    private var sndDigest : FlxSound;
     private var sndMovement : Array<FlxSound>;
     private var ticks : Int;
     private var wasMoving : Bool;
@@ -56,6 +57,8 @@ class Player extends FlxSpriteGroup {
         }
         add(digestees);
         add(cube);
+
+        sndDigest = FlxG.sound.load("assets/sounds/digest.wav");
 
         sndMovement = new Array<FlxSound>();
         sndMovement.push(
@@ -142,6 +145,7 @@ class Player extends FlxSpriteGroup {
                 if (d.isDigested()) {
                     d.kill();
                     hp += 1;
+                    sndDigest.play();
                 }
             });
 
