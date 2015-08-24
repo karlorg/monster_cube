@@ -6,6 +6,7 @@ import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
 import flixel.tweens.FlxEase;
@@ -35,6 +36,7 @@ class PlayState extends FlxState
     private var lastAdvSpawn : Int;
     private var player : Player;
     private var shots : FlxGroup;
+    private var sndCubeDeath : FlxSound;
     private var ticks : Int;
     private var tilemap : FlxTilemap;
     private var treasure : FlxSprite;
@@ -86,6 +88,8 @@ class PlayState extends FlxState
         for (i in 0...16) {
             shots.add(new Shot());
         }
+
+        sndCubeDeath = FlxG.sound.load("assets/sounds/cubedeath.wav");
     }
 
     private function spawnAdventurer() : Void {
@@ -180,7 +184,8 @@ class PlayState extends FlxState
         player.onShot();
         if (player.hp <= 0) {
             deadState = true;
-            FlxTween.color(player.cube, 3.0,
+            sndCubeDeath.play();
+            FlxTween.color(player.cube, 4.5,
                            player.cube.color, FlxColor.BLACK,
                            player.cube.alpha, 0.8,
                            {ease: FlxEase.quadInOut,
