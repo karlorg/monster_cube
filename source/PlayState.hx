@@ -16,11 +16,12 @@ import flixel.util.FlxColor;
 import flixel.util.FlxMath;
 import flixel.util.FlxPoint;
 import flixel.util.FlxRandom;
+import flixel.util.FlxTimer;
 import openfl.Assets;
 
 using flixel.util.FlxSpriteUtil;
 
-class PlayState extends FlxState
+class PlayState extends FlxState implements Treasure.TreasureTeleportListener
 {
 
     static inline var spawnDelay : Int = 5 * 60;
@@ -73,6 +74,7 @@ class PlayState extends FlxState
         add(hud);
 
         treasure = new Treasure(9 * tileWidth, 17 * tileHeight);
+        treasure.listenTeleport(this);
         add(treasure);
         treasureCarrier = null;
 
@@ -240,6 +242,28 @@ class PlayState extends FlxState
         msg.scrollFactor.y = 0;
         msg.screenCenter();
         add(msg);
+    }
+
+    public function onTreasureTeleport(trs : Treasure,
+                                       oldX : Int, oldY : Int,
+                                       newX : Int, newY : Int) : Void {
+        var poof1 = new FlxSprite(oldX, oldY);
+        poof1.loadGraphic("assets/images/poof.png", true, 16, 16);
+        poof1.animation.add("poof", [0, 1], 4);
+        poof1.animation.play("poof");
+        add(poof1);
+        var poof2 = new FlxSprite(newX, newY);
+        poof2.loadGraphic("assets/images/poof.png", true, 16, 16);
+        poof2.animation.add("poof", [0, 1], 4);
+        poof2.animation.play("poof");
+        add(poof2);
+
+        var timer = new FlxTimer(0.45, function(_) {
+                poof1.kill();
+                poof2.kill();
+                remove(poof1);
+                remove(poof2);
+            });
     }
 
 }

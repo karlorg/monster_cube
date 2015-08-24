@@ -3,9 +3,15 @@ package ;
 import flixel.FlxG;
 import flixel.FlxSprite;
 
+interface TreasureTeleportListener {
+    public function onTreasureTeleport(trs : Treasure,
+                                       oldX : Int, oldY : Int,
+                                       newX : Int, newY : Int) : Void;
+}
+
 class Treasure extends FlxSprite {
 
-    static inline var teleportDelay : Int = 60 * 30;
+    static inline var teleportDelay : Int = 60 * 15;
     static var tileWidth : Int = PlayState.tileWidth;
     static var tileHeight : Int = PlayState.tileHeight;
 
@@ -13,6 +19,7 @@ class Treasure extends FlxSprite {
     private var homeX : Int;
     private var homeY : Int;
     private var lastTouched : Int;
+    private var teleportListeners : Array<TreasureTeleportListener>;
     private var ticks : Int;
 
     public function new(x : Int, y : Int) {
@@ -26,6 +33,8 @@ class Treasure extends FlxSprite {
 
         loadGraphic("assets/images/treasure.png", false, 16, 16);
 
+        teleportListeners = new Array<TreasureTeleportListener>();
+
         ticks = 0;
         lastTouched = 0;
     }
@@ -36,6 +45,16 @@ class Treasure extends FlxSprite {
 
     public function dropped() : Void {
         carried = false;
+    }
+
+    public function listenTeleport(l : TreasureTeleportListener) : Void {
+        teleportListeners.push(l);
+    }
+
+    private function notifyTeleport() : Void {
+        for (l in teleportListeners) {
+            l.onTreasureTeleport(this, Std.int(x), Std.int(y), homeX, homeY);
+        }
     }
 
     override public function update() : Void {
@@ -49,6 +68,7 @@ class Treasure extends FlxSprite {
 
         if (x != homeX || y != homeY) {
             if (ticks - lastTouched > teleportDelay) {
+                notifyTeleport();
                 x = homeX;
                 y = homeY;
             }
