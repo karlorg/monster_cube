@@ -114,6 +114,7 @@ class Player extends FlxSpriteGroup {
     public function get_hiding() : Bool {
         return (!wasMoving)
             && (digestees.countLiving() == 0)
+            && (digestArrows.countLiving() == 0)
             && (ticks - lastMoved > hideDelay * 60 / 2);
     }
 
