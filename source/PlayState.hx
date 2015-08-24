@@ -197,7 +197,7 @@ class PlayState extends FlxState
 
     private function onPlayerShot(shot: FlxObject, cube: FlxObject) {
         shot.kill();
-        player.onShot();
+        player.onShot(shot);
         sndBowHit.play();
         FlxG.camera.shake(0.01, 0.2);
         var sndPain = FlxRandom.getObject(sndCubePain);

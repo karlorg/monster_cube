@@ -34,6 +34,7 @@ class Player extends FlxSpriteGroup {
 
     private var alphaTween : Null<FlxTween>;
     private var digestees : FlxTypedSpriteGroup<Digestee>;
+    private var digestArrows : FlxTypedSpriteGroup<Digestee>;
     private var lastMoved : Int;
     private var lastMoveSnd : Int;
     private var sndDigest : FlxSound;
@@ -53,9 +54,20 @@ class Player extends FlxSpriteGroup {
         digestees = new FlxTypedSpriteGroup<Digestee>();
         digestees.maxSize = 8;
         for (i in 0...8) {
-            digestees.add(new Digestee(cube));
+            digestees.add(new Digestee(cube, "assets/images/archer.png",
+                                       [12, 13, 14]));
         }
         add(digestees);
+
+        digestArrows = new FlxTypedSpriteGroup<Digestee>();
+        digestArrows.maxSize = 8;
+        for (i in 0...8) {
+            digestArrows.add(new Digestee(cube,
+                                          "assets/images/arrow-digest.png",
+                                          [0, 1, 2]));
+        }
+        add(digestArrows);
+
         add(cube);
 
         sndDigest = FlxG.sound.load("assets/sounds/digest.wav");
@@ -119,10 +131,19 @@ class Player extends FlxSpriteGroup {
         adv.kill();
     }
 
-    public function onShot() : Void {
+    public function onShot(arrow : FlxObject) : Void {
         if (hp > 0) {
             hp -= 1;
         }
+
+        var xStart = cube.x + arrow.x - this.x;
+        var yStart = cube.y + arrow.y - this.y;
+        var digestArrow : Digestee = cast(digestArrows.recycle(), Digestee);
+        if (digestArrow == null) {
+            digestArrow = cast(digestArrows.getRandom(), Digestee);
+            digestArrow.kill();
+        }
+        digestArrow.spawn(Std.int(xStart), Std.int(yStart));
 
         var targetAlpha : Float = 0;
         if (wasMoving) {
@@ -148,6 +169,11 @@ class Player extends FlxSpriteGroup {
                         hp += 1;
                     }
                     sndDigest.play();
+                }
+            });
+        digestArrows.forEachAlive(function (d : Digestee) {
+                if (d.isDigested()) {
+                    d.kill();
                 }
             });
 
@@ -477,13 +503,14 @@ class Digestee extends FlxSprite {
     private var xTarget : Float;
     private var yTarget : Float;
 
-    public function new(cube : FlxSprite) {
+    public function new(cube : FlxSprite,
+                        imgName : String, anim : Array<Int>) {
         super();
         this.cube = cube;
-        loadGraphic("assets/images/archer.png",
+        loadGraphic(imgName,
                     true,  // animated
                     16, 16);
-        animation.add("rot", [12, 13, 14]);
+        animation.add("rot", anim);
         animation.play("rot");
         animation.curAnim.stop();
         animation.curAnim.curFrame = 0;
