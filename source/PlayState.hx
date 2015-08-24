@@ -137,6 +137,7 @@ class PlayState extends FlxState
             if (FlxG.keys.justPressed.R) {
                 FlxG.switchState(new PlayState());
             }
+            hud.update();
             return;
         }
 

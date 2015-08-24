@@ -144,7 +144,9 @@ class Player extends FlxSpriteGroup {
         digestees.forEachAlive(function (d : Digestee) {
                 if (d.isDigested()) {
                     d.kill();
-                    hp += 1;
+                    if (hp < 10) {
+                        hp += 1;
+                    }
                     sndDigest.play();
                 }
             });
