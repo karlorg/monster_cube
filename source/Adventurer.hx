@@ -39,7 +39,7 @@ class Adventurer extends FlxSprite {
     private var nodes : Array<FlxPoint>;
     private var player : Player;
     private var playState : PlayState;
-    private var sndScream : FlxSound;
+    private var sndScreams : Array<FlxSound>;
     private var ticks : Int;
     private var ticksToRun : Int;
     private var tilemap : FlxTilemap;
@@ -68,7 +68,15 @@ class Adventurer extends FlxSprite {
 
         path = new FlxPath();
 
-        sndScream = FlxG.sound.load("assets/sounds/WilhelmScreamGurgly.wav");
+        sndScreams = new Array<FlxSound>();
+        sndScreams.push(
+            FlxG.sound.load("assets/sounds/WilhelmScreamGurgly.wav"));
+        sndScreams.push(
+            FlxG.sound.load("assets/sounds/HowieScreamGurgly.wav"));
+        /*
+        sndScreams.push(
+            FlxG.sound.load("assets/sounds/GurgleScream.wav"));
+        */
 
         exists = false;
     }
@@ -90,7 +98,8 @@ class Adventurer extends FlxSprite {
      * At the moment it's just playing a sound effect.
      */
     public function reactToEaten() : Void {
-        sndScream.play();
+        var snd = FlxRandom.getObject(sndScreams);
+        snd.play();
     }
 
     public function pickupTreasure() : Void {
@@ -106,7 +115,7 @@ class Adventurer extends FlxSprite {
     }
 
     override public function destroy() : Void {
-        sndScream = FlxDestroyUtil.destroy(sndScream);
+        sndScreams = FlxDestroyUtil.destroyArray(sndScreams);
         super.destroy();
     }
 
