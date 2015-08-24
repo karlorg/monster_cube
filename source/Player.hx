@@ -157,9 +157,9 @@ class Player extends FlxSpriteGroup {
         // wonky if the maps ever break that assumption.
 
         var up  = FlxG.keys.anyPressed(["UP", "W"]);
-        var down  = FlxG.keys.anyPressed(["DOWN", "R"]);
+        var down  = FlxG.keys.anyPressed(["DOWN", "S"]);
         var left  = FlxG.keys.anyPressed(["LEFT", "A"]);
-        var right  = FlxG.keys.anyPressed(["RIGHT", "S"]);
+        var right  = FlxG.keys.anyPressed(["RIGHT", "D"]);
 
         if (up && down) { up = down = false; }
         if (left && right) { left = right = false; }

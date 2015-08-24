@@ -179,17 +179,18 @@ class PlayState extends FlxState
         }
     }
 
-    private function onAdventurerCollision(adv : Adventurer, ply : Player)
+    private function onAdventurerCollision(adv : FlxObject, cbe : FlxObject)
         : Void {
-        if (adv.isCarryingTreasure()) {
-            adv.dropTreasure();
+        var _adv = cast(adv, Adventurer);
+        if (_adv.isCarryingTreasure()) {
+            _adv.dropTreasure();
         }
-        if (treasureCarrier == adv) {
+        if (treasureCarrier == _adv) {
             treasureCarrier = null;
         }
-        if (player.exists && adv.exists) {
-            adv.reactToEaten();
-            player.eat(adv);
+        if (player.exists && _adv.exists) {
+            _adv.reactToEaten();
+            player.eat(_adv);
         }
     }
 
