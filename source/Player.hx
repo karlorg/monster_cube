@@ -5,10 +5,12 @@ import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.group.FlxTypedSpriteGroup;
+import flixel.system.FlxSound;
 import flixel.tile.FlxTilemap;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxRandom;
 
 class Player extends FlxSpriteGroup {
@@ -19,6 +21,8 @@ class Player extends FlxSpriteGroup {
     static inline var colorHurt = FlxColor.RED;
     static inline var colorNormal = FlxColor.AQUAMARINE;
     static inline var hideDelay : Float = 0.3;
+    static inline var moveSndDelayMin : Int = 25;
+    static inline var moveSndDelayMax : Int = 40;
     static inline var speed : Float = 1.3;
     static var tileWidth : Int = PlayState.tileWidth;
     static var tileHeight : Int = PlayState.tileHeight;
@@ -31,6 +35,8 @@ class Player extends FlxSpriteGroup {
     private var alphaTween : Null<FlxTween>;
     private var digestees : FlxTypedSpriteGroup<Digestee>;
     private var lastMoved : Int;
+    private var lastMoveSnd : Int;
+    private var sndMovement : Array<FlxSound>;
     private var ticks : Int;
     private var wasMoving : Bool;
 
@@ -51,13 +57,43 @@ class Player extends FlxSpriteGroup {
         add(digestees);
         add(cube);
 
+        sndMovement = new Array<FlxSound>();
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp0.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp1.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp2.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp3.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp4.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp5.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp6.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp7.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp8.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp9.wav"));
+        sndMovement.push(
+            FlxG.sound.load("assets/sounds/slurp10.wav"));
+
         wasMoving = false;
 
         ticks = 0;
         lastMoved = -10000;
+        lastMoveSnd = -10000;
         alphaTween = null;
 
         hp = 10;
+    }
+
+    override public function destroy() : Void {
+        sndMovement = FlxDestroyUtil.destroyArray(sndMovement);
+        super.destroy();
     }
 
     public function get_hiding() : Bool {
@@ -397,6 +433,12 @@ class Player extends FlxSpriteGroup {
 
         if (up || down || left || right) {
             lastMoved = ticks;
+            if (ticks - lastMoveSnd > FlxRandom.intRanged(
+                    moveSndDelayMin, moveSndDelayMax)) {
+                var snd : FlxSound = FlxRandom.getObject(sndMovement);
+                snd.play(true);
+                lastMoveSnd = ticks;
+            }
         }
 
         if (!wasMoving) {
