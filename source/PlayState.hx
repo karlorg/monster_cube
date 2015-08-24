@@ -197,6 +197,7 @@ class PlayState extends FlxState
         shot.kill();
         player.onShot();
         sndBowHit.play();
+        FlxG.camera.shake(0.01, 0.2);
         var sndPain = FlxRandom.getObject(sndCubePain);
         sndPain.play();
         if (player.hp <= 0) {

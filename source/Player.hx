@@ -522,7 +522,7 @@ class Digestee extends FlxSprite {
 
         ticks += 1;
 
-        alpha = 0.1 + 0.9 * (1 - ticks / lifespan);
+        alpha = 0.3 + 0.7 * (1 - ticks / lifespan);
         angle += rotRate;
 
         // manually tween sprite into position at start of life
