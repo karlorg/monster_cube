@@ -1,10 +1,13 @@
 package ;
 
+import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
+import flixel.system.FlxSound;
 import flixel.tile.FlxTilemap;
 import flixel.util.FlxAngle;
 import flixel.util.FlxColor;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxPath;
 import flixel.util.FlxPoint;
 import flixel.util.FlxRandom;
@@ -36,6 +39,7 @@ class Adventurer extends FlxSprite {
     private var nodes : Array<FlxPoint>;
     private var player : Player;
     private var playState : PlayState;
+    private var sndScream : FlxSound;
     private var ticks : Int;
     private var ticksToRun : Int;
     private var tilemap : FlxTilemap;
@@ -64,6 +68,8 @@ class Adventurer extends FlxSprite {
 
         path = new FlxPath();
 
+        sndScream = FlxG.sound.load("assets/sounds/WilhelmScreamGurgly.wav");
+
         exists = false;
     }
 
@@ -77,6 +83,16 @@ class Adventurer extends FlxSprite {
         ticksToRun = -1;
     }
 
+    /**
+     * Do anything necessary in response to being eaten.
+     *
+     * This does not include dying; the caller will take care of that.
+     * At the moment it's just playing a sound effect.
+     */
+    public function reactToEaten() : Void {
+        sndScream.play();
+    }
+
     public function pickupTreasure() : Void {
         carryingTreasure = true;
     }
@@ -87,6 +103,11 @@ class Adventurer extends FlxSprite {
 
     public function isCarryingTreasure() : Bool {
         return carryingTreasure;
+    }
+
+    override public function destroy() : Void {
+        sndScream = FlxDestroyUtil.destroy(sndScream);
+        super.destroy();
     }
 
     override public function update() : Void {

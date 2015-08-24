@@ -172,6 +172,7 @@ class PlayState extends FlxState
             treasureCarrier = null;
         }
         if (player.exists && adv.exists) {
+            adv.reactToEaten();
             player.eat(adv);
         }
     }
